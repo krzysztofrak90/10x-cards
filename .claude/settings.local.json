@@ -9,7 +9,13 @@
       "Bash(npx tsc:*)",
       "Bash(npm install:*)",
       "Bash(npx shadcn@latest add textarea card skeleton badge label)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(ssh:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git push:*)",
+      "Bash(cat:*)",
+      "Bash(ssh-keygen:*)",
+      "Bash(ssh-add:*)"
     ],
     "deny": [],
     "ask": []
