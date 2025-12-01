@@ -7,7 +7,9 @@
       "Bash(npx supabase:*)",
       "Bash(\"D:\\10xdevs\\10x-cards\\src\\db\\database.types.ts\")",
       "Bash(npx tsc:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest add textarea card skeleton badge label)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
