@@ -109,71 +109,66 @@ ${sourceText}
 
 Odpowiedź (tylko JSON, bez dodatkowych komentarzy):`;
 
-    try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-          "HTTP-Referer": "https://flashlearn-ai.com",
-          "X-Title": "FlashLearn AI",
-        },
-        body: JSON.stringify({
-          model: AI_MODEL,
-          messages: [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 2000,
-        }),
-      });
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "https://flashlearn-ai.com",
+        "X-Title": "FlashLearn AI",
+      },
+      body: JSON.stringify({
+        model: AI_MODEL,
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      }),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          `OpenRouter API error: ${response.status} ${response.statusText}. ${errorData.error?.message || ""}`
-        );
-      }
-
-      const data = await response.json();
-      const aiResponse = data.choices?.[0]?.message?.content;
-
-      if (!aiResponse) {
-        throw new Error("Brak odpowiedzi z API AI");
-      }
-
-      // Parsowanie JSON z odpowiedzi AI
-      // Czasami AI może dodać markdown code block, więc musimy to wyczyścić
-      const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
-      if (!jsonMatch) {
-        throw new Error("Nie znaleziono JSON w odpowiedzi AI");
-      }
-
-      const flashcardsData = JSON.parse(jsonMatch[0]) as {
-        front: string;
-        back: string;
-      }[];
-
-      // Konwersja do naszego formatu DTO
-      const proposals: FlashcardProposalDTO[] = flashcardsData.map((card) => ({
-        front: card.front.trim(),
-        back: card.back.trim(),
-        source: "ai-full",
-      }));
-
-      // Walidacja - sprawdź czy mamy przynajmniej jedną fiszkę
-      if (proposals.length === 0) {
-        throw new Error("AI nie wygenerowało żadnych fiszek");
-      }
-
-      return proposals;
-    } catch (error) {
-      console.error("[callAiService] Błąd podczas wywoływania OpenRouter API:", error);
-      throw error;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        `OpenRouter API error: ${response.status} ${response.statusText}. ${errorData.error?.message || ""}`
+      );
     }
+
+    const data = await response.json();
+    const aiResponse = data.choices?.[0]?.message?.content;
+
+    if (!aiResponse) {
+      throw new Error("Brak odpowiedzi z API AI");
+    }
+
+    // Parsowanie JSON z odpowiedzi AI
+    // Czasami AI może dodać markdown code block, więc musimy to wyczyścić
+    const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      throw new Error("Nie znaleziono JSON w odpowiedzi AI");
+    }
+
+    const flashcardsData = JSON.parse(jsonMatch[0]) as {
+      front: string;
+      back: string;
+    }[];
+
+    // Konwersja do naszego formatu DTO
+    const proposals: FlashcardProposalDTO[] = flashcardsData.map((card) => ({
+      front: card.front.trim(),
+      back: card.back.trim(),
+      source: "ai-full",
+    }));
+
+    // Walidacja - sprawdź czy mamy przynajmniej jedną fiszkę
+    if (proposals.length === 0) {
+      throw new Error("AI nie wygenerowało żadnych fiszek");
+    }
+
+    return proposals;
   }
 
   /**
@@ -214,9 +209,8 @@ Odpowiedź (tylko JSON, bez dodatkowych komentarzy):`;
         source_text_hash: sourceTextHash,
         source_text_length: sourceTextLength,
       });
-    } catch (logError) {
-      // Jeśli nie udało się zapisać błędu, logujemy do konsoli
-      console.error("Nie udało się zapisać błędu do generation_error_logs:", logError);
+    } catch {
+      // Jeśli nie udało się zapisać błędu, ignorujemy
     }
   }
 }

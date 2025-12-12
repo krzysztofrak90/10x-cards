@@ -18,8 +18,7 @@ export default function Navigation({ user, currentPath }: NavigationProps) {
         method: "POST",
       });
       window.location.href = "/login";
-    } catch (error) {
-      console.error("Błąd wylogowania:", error);
+    } catch {
       setLoggingOut(false);
     }
   };

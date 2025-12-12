@@ -15,7 +15,13 @@
       "Bash(git push:*)",
       "Bash(cat:*)",
       "Bash(ssh-keygen:*)",
-      "Bash(ssh-add:*)"
+      "Bash(ssh-add:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run lint:fix:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
