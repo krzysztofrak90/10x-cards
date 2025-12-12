@@ -10,10 +10,15 @@ Studenci i osoby uczące się często tracą cenny czas na ręczne przygotowywan
 
 ### 3.1. Inteligentne generowanie materiałów edukacyjnych
 - Przyjmowanie tekstów o długości 800-12000 znaków (elastyczne limity dostosowane do różnych źródeł)
-- Komunikacja z API modeli językowych w celu ekstrakcji kluczowych informacji
+- Komunikacja z API modeli językowych (OpenRouter) w celu ekstrakcji kluczowych informacji
 - Generowanie zestawu 5-15 fiszek z automatycznym dopasowaniem liczby do objętości materiału
+- **Inteligentna detekcja języka tekstu źródłowego:**
+  - Dla tekstów w języku polskim: generowanie pytań i odpowiedzi w języku polskim
+  - Dla tekstów w językach obcych (angielski, niemiecki, etc.): generowanie przodu fiszki w oryginalnym języku, a tyłu z tłumaczeniem/wyjaśnieniem po polsku
+  - Wsparcie dla nauki języków obcych poprzez dwujęzyczne fiszki
 - Prezentacja wygenerowanych propozycji w formie interaktywnej listy
 - Możliwość indywidualnej akceptacji, modyfikacji lub odrzucenia każdej fiszki
+- Obsługa różnych formatów odpowiedzi AI (pojedyncza tablica JSON, wiele tablic, markdown code blocks)
 
 ### 3.2. Pełne zarządzanie kolekcją fiszek
 - Intuicyjny formularz do manualnego dodawania fiszek z walidacją długości
@@ -176,6 +181,21 @@ Studenci i osoby uczące się często tracą cenny czas na ręczne przygotowywan
 - System weryfikuje właściciela przy każdej operacji CRUD
 - Dokumentacja prywatności jasno komunikuje praktyki bezpieczeństwa
 
+### US-010: Generowanie dwujęzycznych fiszek do nauki języków
+**Jako:** Użytkownik uczący się języka obcego
+**Chcę:** Wkleić tekst w języku obcym i otrzymać fiszki z terminem/pytaniem w oryginalnym języku oraz tłumaczeniem po polsku
+**Po to, aby:** Efektywnie uczyć się nowych słówek i pojęć w kontekście bez konieczności ręcznego tłumaczenia
+
+**Kryteria akceptacji:**
+- System automatycznie wykrywa język tekstu źródłowego
+- Dla tekstów w języku polskim: generuje pytanie i odpowiedź po polsku
+- Dla tekstów w językach obcych (angielski, niemiecki, hiszpański, etc.):
+  - Przód fiszki zawiera termin/pytanie w oryginalnym języku tekstu
+  - Tył fiszki zawiera tłumaczenie i wyjaśnienie po polsku
+- AI priorytetyzuje kluczowe słówka, zwroty i idiomy dla tekstów obcojęzycznych
+- Każda fiszka zawiera kontekst użycia w wyjaśnieniu
+- Użytkownik może edytować zarówno przód jak i tył fiszki po wygenerowaniu
+
 ## 6. Metryki sukcesu
 
 ### 6.1. Jakość generowania AI
@@ -197,3 +217,88 @@ Studenci i osoby uczące się często tracą cenny czas na ręczne przygotowywan
 - **Częstotliwość nauki:** 40% użytkowników z fiskami przeprowadza sesję nauki przynajmniej raz w tygodniu
 - **Completion rate:** 75% rozpoczętych sesji nauki jest dokończonych
 - **Efekt spaced repetition:** Średnia ocena trudności fiszek spada o 20% po trzech powtórkach
+
+## 7. Jakość kodu i testowanie
+
+### 7.1. Strategia testowania
+Aplikacja implementuje wielowarstwową strategię testowania zapewniającą wysoką jakość kodu i niezawodność:
+
+**Testy jednostkowe (Unit Tests) - Vitest**
+- Framework: Vitest z happy-dom
+- Pokrycie: ≥80% dla logiki biznesowej
+- Kluczowe obszary:
+  - GenerationService (logika AI)
+  - Parsowanie odpowiedzi z różnych modeli AI
+  - Walidacja danych (Zod schemas)
+  - Obsługa błędów API
+
+**Testy integracyjne (Integration Tests)**
+- Testowanie współpracy API endpoints z bazą danych
+- Weryfikacja Row Level Security policies
+- Testowanie middleware autentykacji
+
+**Testy E2E (End-to-End) - Playwright**
+- Symulacja kompletnych ścieżek użytkownika
+- Testy rejestracji, logowania i głównych flow
+- Weryfikacja protected routes
+- Testy UI interactions
+
+### 7.2. CI/CD i automatyzacja
+- **GitHub Actions**: Automatyczne uruchamianie testów przy każdym push/PR
+- **Lint & Format**: ESLint + Prettier przy pre-commit hooks
+- **Build verification**: Weryfikacja buildu przed merge
+- **Test Reports**: Generowanie raportów pokrycia testami
+
+### 7.3. Dokumentacja techniczna
+Projekt zawiera szczegółową dokumentację techniczną:
+- **Test Plan** (`.ai/test-plan.md`): Strategia testowania, edge cases, cele pokrycia
+- **Tech Stack** (`.ai/tech-stack.md`): Wybrane technologie i uzasadnienia
+- **DB Plan** (`.ai/db-plan.md`): Schema bazy danych
+- **API Plan** (`.ai/api-plan.md`): Specyfikacja endpointów API
+- **PRD** (`.ai/prd.md`): Product Requirements Document
+
+### 7.4. Monitoring i obsługa błędów
+- Logowanie błędów generowania do tabeli `generation_error_logs`
+- Tracking metadanych generacji (czas, liczba fiszek, model użyty)
+- Graceful error handling z informacyjnymi komunikatami dla użytkownika
+- Automatyczne retry przy rate limiting (429 errors)
+
+## 8. Stack technologiczny (implementacja)
+
+### 8.1. Frontend
+- **Framework**: Astro 5.x (SSR)
+- **UI Components**: React 19.x
+- **Styling**: Tailwind CSS 4.x
+- **UI Library**: Radix UI
+- **State Management**: Zustand (jeśli potrzebne)
+- **Form Validation**: Zod
+
+### 8.2. Backend
+- **Runtime**: Node.js 22.x
+- **Framework**: Astro (API routes)
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **AI Integration**: OpenRouter API
+  - Model: meta-llama/llama-3.2-3b-instruct:free (lub inne modele)
+  - Alternatywy: Google Gemini, OpenAI GPT-4o-mini
+
+### 8.3. Development & Testing
+- **Package Manager**: npm
+- **Unit Testing**: Vitest + happy-dom
+- **E2E Testing**: Playwright
+- **Linting**: ESLint + TypeScript ESLint
+- **Formatting**: Prettier
+- **Git Hooks**: Husky + lint-staged
+- **CI/CD**: GitHub Actions
+
+### 8.4. Infrastructure
+- **Hosting**: TBD (Vercel, Netlify, lub self-hosted)
+- **Database**: Supabase Cloud lub self-hosted
+- **Environment Variables**: Bezpieczne przechowywanie w GitHub Secrets
+- **Monitoring**: TBD (Sentry, LogRocket)
+
+---
+
+**Ostatnia aktualizacja**: 2025-12-12
+**Wersja**: 1.1
+**Status**: Active Development
