@@ -167,17 +167,32 @@ Odpowiedź (tylko JSON):`;
     console.log("AI Response:", aiResponse);
 
     // Parsowanie JSON z odpowiedzi AI
-    // Czasami AI może dodać markdown code block, więc musimy to wyczyścić
-    const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
+    // Model może zwrócić albo jedną tablicę [ {...}, {...} ]
+    // albo wiele osobnych tablic [ {...} ] [ {...} ]
+
+    // Znajdź wszystkie tablice JSON w odpowiedzi
+    const jsonArrayMatches = aiResponse.match(/\[[^\[\]]*\{[^\}]*\}[^\[\]]*\]/g);
+
+    if (!jsonArrayMatches || jsonArrayMatches.length === 0) {
       console.error("Nie znaleziono JSON w odpowiedzi AI. Response:", aiResponse);
       throw new Error("Nie znaleziono JSON w odpowiedzi AI");
     }
 
-    const flashcardsData = JSON.parse(jsonMatch[0]) as {
-      front: string;
-      back: string;
-    }[];
+    // Sparsuj wszystkie znalezione tablice i połącz je w jedną
+    let flashcardsData: { front: string; back: string }[] = [];
+
+    for (const jsonMatch of jsonArrayMatches) {
+      try {
+        const parsed = JSON.parse(jsonMatch);
+        // Jeśli to tablica, dodaj wszystkie elementy
+        if (Array.isArray(parsed)) {
+          flashcardsData = flashcardsData.concat(parsed);
+        }
+      } catch (error) {
+        console.error("Błąd parsowania JSON fragment:", jsonMatch, error);
+        // Kontynuuj z innymi fragmentami
+      }
+    }
 
     // Konwersja do naszego formatu DTO
     const proposals: FlashcardProposalDTO[] = flashcardsData.map((card) => ({
