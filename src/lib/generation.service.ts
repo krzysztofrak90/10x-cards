@@ -10,7 +10,7 @@ type TypedSupabaseClient = SupabaseClient<Database>;
 /**
  * Stała określająca model AI używany do generowania
  */
-const AI_MODEL = "google/gemini-2.0-flash-exp:free";
+const AI_MODEL = "meta-llama/llama-3.2-3b-instruct:free";
 
 /**
  * Klucz API dla OpenRouter
@@ -83,8 +83,12 @@ export class GenerationService {
    */
   private async callAiService(sourceText: string): Promise<FlashcardProposalDTO[]> {
     if (!OPENROUTER_API_KEY) {
+      console.error("OPENROUTER_API_KEY is not set");
       throw new Error("OPENROUTER_API_KEY nie jest skonfigurowany w zmiennych środowiskowych");
     }
+
+    console.log("Calling AI service with model:", AI_MODEL);
+    console.log("Source text length:", sourceText.length);
 
     const prompt = `Przeanalizuj poniższy tekst i wygeneruj 5-8 fiszek edukacyjnych.
 
@@ -142,6 +146,11 @@ Odpowiedź (tylko JSON):`;
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error("OpenRouter API error:", {
+        status: response.status,
+        statusText: response.statusText,
+        errorData,
+      });
       throw new Error(
         `OpenRouter API error: ${response.status} ${response.statusText}. ${errorData.error?.message || ""}`
       );
@@ -151,13 +160,17 @@ Odpowiedź (tylko JSON):`;
     const aiResponse = data.choices?.[0]?.message?.content;
 
     if (!aiResponse) {
+      console.error("Brak odpowiedzi z API AI. Data:", JSON.stringify(data));
       throw new Error("Brak odpowiedzi z API AI");
     }
+
+    console.log("AI Response:", aiResponse);
 
     // Parsowanie JSON z odpowiedzi AI
     // Czasami AI może dodać markdown code block, więc musimy to wyczyścić
     const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
+      console.error("Nie znaleziono JSON w odpowiedzi AI. Response:", aiResponse);
       throw new Error("Nie znaleziono JSON w odpowiedzi AI");
     }
 

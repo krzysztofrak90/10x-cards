@@ -96,10 +96,14 @@ export const POST: APIRoute = async (context) => {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });
-  } catch {
+  } catch (error) {
+    // Loguj szczegóły błędu do konsoli serwera
+    console.error("Błąd podczas generowania fiszek:", error);
+
     return new Response(
       JSON.stringify({
         error: "Wewnętrzny błąd serwera podczas generowania fiszek",
+        details: error instanceof Error ? error.message : "Nieznany błąd",
       }),
       {
         status: 500,
