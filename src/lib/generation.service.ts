@@ -83,12 +83,8 @@ export class GenerationService {
    */
   private async callAiService(sourceText: string): Promise<FlashcardProposalDTO[]> {
     if (!OPENROUTER_API_KEY) {
-      console.error("OPENROUTER_API_KEY is not set");
       throw new Error("OPENROUTER_API_KEY nie jest skonfigurowany w zmiennych środowiskowych");
     }
-
-    console.log("Calling AI service with model:", AI_MODEL);
-    console.log("Source text length:", sourceText.length);
 
     const prompt = `You are a flashcard generator for language learning.
 
@@ -156,11 +152,6 @@ JSON response:`;
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error("OpenRouter API error:", {
-        status: response.status,
-        statusText: response.statusText,
-        errorData,
-      });
       throw new Error(
         `OpenRouter API error: ${response.status} ${response.statusText}. ${errorData.error?.message || ""}`
       );
@@ -170,21 +161,17 @@ JSON response:`;
     const aiResponse = data.choices?.[0]?.message?.content;
 
     if (!aiResponse) {
-      console.error("Brak odpowiedzi z API AI. Data:", JSON.stringify(data));
       throw new Error("Brak odpowiedzi z API AI");
     }
-
-    console.log("AI Response:", aiResponse);
 
     // Parsowanie JSON z odpowiedzi AI
     // Model może zwrócić albo jedną tablicę [ {...}, {...} ]
     // albo wiele osobnych tablic [ {...} ] [ {...} ]
 
     // Znajdź wszystkie tablice JSON w odpowiedzi
-    const jsonArrayMatches = aiResponse.match(/\[[^\[\]]*\{[^\}]*\}[^\[\]]*\]/g);
+    const jsonArrayMatches = aiResponse.match(/\[[^[\]]*\{[^}]*\}[^[\]]*\]/g);
 
     if (!jsonArrayMatches || jsonArrayMatches.length === 0) {
-      console.error("Nie znaleziono JSON w odpowiedzi AI. Response:", aiResponse);
       throw new Error("Nie znaleziono JSON w odpowiedzi AI");
     }
 
@@ -198,9 +185,8 @@ JSON response:`;
         if (Array.isArray(parsed)) {
           flashcardsData = flashcardsData.concat(parsed);
         }
-      } catch (error) {
-        console.error("Błąd parsowania JSON fragment:", jsonMatch, error);
-        // Kontynuuj z innymi fragmentami
+      } catch {
+        // Kontynuuj z innymi fragmentami jeśli parsowanie nie powiodło się
       }
     }
 
