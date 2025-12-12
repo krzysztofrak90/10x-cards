@@ -1,9 +1,5 @@
 import { useState } from "react";
-import type {
-  CreateFlashcardsCommand,
-  CreateFlashcardsResponse,
-  CreateFlashcardDTO,
-} from "@/types";
+import type { CreateFlashcardsCommand, CreateFlashcardsResponse, CreateFlashcardDTO } from "@/types";
 import type { FlashcardProposalViewModel } from "./useGenerateFlashcards";
 
 /**
@@ -28,10 +24,7 @@ export function useSaveFlashcards() {
    * Transforms FlashcardProposalViewModel to CreateFlashcardDTO
    * Validates that required fields are present and within limits
    */
-  const transformToDTO = (
-    flashcard: FlashcardProposalViewModel,
-    generationId: number
-  ): CreateFlashcardDTO => {
+  const transformToDTO = (flashcard: FlashcardProposalViewModel, generationId: number): CreateFlashcardDTO => {
     return {
       front: flashcard.front.trim(),
       back: flashcard.back.trim(),
@@ -65,10 +58,7 @@ export function useSaveFlashcards() {
    * @param generationId - ID of the generation these flashcards belong to
    * @returns Promise with success status and data/error
    */
-  const saveFlashcards = async (
-    flashcards: FlashcardProposalViewModel[],
-    generationId: number | null
-  ) => {
+  const saveFlashcards = async (flashcards: FlashcardProposalViewModel[], generationId: number | null) => {
     if (!generationId) {
       setSaveError("Brak ID generacji. Wygeneruj fiszki ponownie.");
       return { success: false, error: "Missing generation ID" };
@@ -94,9 +84,7 @@ export function useSaveFlashcards() {
 
     try {
       // Transform to DTOs
-      const flashcardDTOs = flashcards.map((f) =>
-        transformToDTO(f, generationId)
-      );
+      const flashcardDTOs = flashcards.map((f) => transformToDTO(f, generationId));
 
       const command: CreateFlashcardsCommand = {
         flashcards: flashcardDTOs,
@@ -131,10 +119,7 @@ export function useSaveFlashcards() {
 
       return { success: true, data };
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Wystąpił nieoczekiwany błąd.";
+      const message = error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd.";
       setSaveError(message);
       return { success: false, error: message };
     } finally {

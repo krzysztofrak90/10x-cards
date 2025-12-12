@@ -36,15 +36,7 @@ export default function FlashcardGenerationView() {
   } = useGenerateFlashcards();
 
   // Save API logic from custom hook
-  const {
-    isSaving,
-    saveError,
-    saveSuccess,
-    savedCount,
-    saveFlashcards,
-    clearSaveError,
-    clearSuccess,
-  } = useSaveFlashcards();
+  const { isSaving, saveError, saveSuccess, savedCount, saveFlashcards, clearSuccess } = useSaveFlashcards();
 
   /**
    * Validates text input length
@@ -144,9 +136,7 @@ export default function FlashcardGenerationView() {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl font-bold">
-            Generuj fiszki z AI
-          </CardTitle>
+          <CardTitle className="text-3xl font-bold">Generuj fiszki z AI</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Text Input Section */}
@@ -159,11 +149,7 @@ export default function FlashcardGenerationView() {
               currentLength={textValue.length}
             />
 
-            <GenerateButton
-              onClick={handleGenerate}
-              disabled={!isTextValid || isLoading}
-              isLoading={isLoading}
-            />
+            <GenerateButton onClick={handleGenerate} disabled={!isTextValid || isLoading} isLoading={isLoading} />
           </div>
 
           {/* Error Display - Generation */}
@@ -183,9 +169,7 @@ export default function FlashcardGenerationView() {
           {/* Success Display */}
           {saveSuccess && (
             <div className="p-4 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-sm text-green-800 font-medium">
-                ✓ Zapisano pomyślnie {savedCount} fiszek!
-              </p>
+              <p className="text-sm text-green-800 font-medium">✓ Zapisano pomyślnie {savedCount} fiszek!</p>
             </div>
           )}
 

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Button } from '../ui/button';
-import { Label } from '../ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { useState, useEffect } from "react";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface Flashcard {
   id: number;
@@ -19,7 +19,7 @@ interface EditFlashcardModalProps {
 export default function EditFlashcardModal({ flashcard, onClose, onSuccess }: EditFlashcardModalProps) {
   const [front, setFront] = useState(flashcard.front);
   const [back, setBack] = useState(flashcard.back);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -29,14 +29,14 @@ export default function EditFlashcardModal({ flashcard, onClose, onSuccess }: Ed
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       const response = await fetch(`/api/flashcards/${flashcard.id}/update`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ front, back }),
       });
@@ -44,13 +44,13 @@ export default function EditFlashcardModal({ flashcard, onClose, onSuccess }: Ed
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Błąd aktualizacji fiszki');
+        throw new Error(data.error || "Błąd aktualizacji fiszki");
       }
 
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd');
+      setError(err instanceof Error ? err.message : "Wystąpił błąd");
     } finally {
       setLoading(false);
     }
@@ -64,11 +64,7 @@ export default function EditFlashcardModal({ flashcard, onClose, onSuccess }: Ed
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
+            {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
 
             <div className="space-y-2">
               <Label htmlFor="front">Przód fiszki</Label>
@@ -100,7 +96,7 @@ export default function EditFlashcardModal({ flashcard, onClose, onSuccess }: Ed
 
             <div className="flex gap-2">
               <Button type="submit" className="flex-1" disabled={loading}>
-                {loading ? 'Zapisywanie...' : 'Zapisz zmiany'}
+                {loading ? "Zapisywanie..." : "Zapisz zmiany"}
               </Button>
               <Button type="button" variant="outline" onClick={onClose}>
                 Anuluj

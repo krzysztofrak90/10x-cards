@@ -1,24 +1,24 @@
-import { useState } from 'react';
-import { Button } from '../ui/button';
-import { Label } from '../ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { useState } from "react";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 
 export default function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
       });
@@ -26,13 +26,13 @@ export default function LoginForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Błąd logowania');
+        throw new Error(data.error || "Błąd logowania");
       }
 
       // Przekieruj po udanym logowaniu
-      window.location.href = '/generate';
+      window.location.href = "/generate";
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd');
+      setError(err instanceof Error ? err.message : "Wystąpił błąd");
     } finally {
       setLoading(false);
     }
@@ -46,11 +46,7 @@ export default function LoginForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
+          {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
 
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -80,11 +76,11 @@ export default function LoginForm() {
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Logowanie...' : 'Zaloguj się'}
+            {loading ? "Logowanie..." : "Zaloguj się"}
           </Button>
 
           <div className="text-center text-sm text-gray-600">
-            Nie masz konta?{' '}
+            Nie masz konta?{" "}
             <a href="/register" className="text-blue-600 hover:underline">
               Zarejestruj się
             </a>

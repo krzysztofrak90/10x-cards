@@ -19,13 +19,7 @@ const MAX_LENGTH = 10000;
  * Validates text length (1000-10000 characters)
  * Displays character count and validation status
  */
-export function TextInputArea({
-  value,
-  onChange,
-  disabled = false,
-  isValid,
-  currentLength,
-}: TextInputAreaProps) {
+export function TextInputArea({ value, onChange, disabled = false, isValid, currentLength }: TextInputAreaProps) {
   /**
    * Determines validation message based on current text length
    */
@@ -98,11 +92,7 @@ export function TextInputArea({
           {getValidationMessage()}
         </span>
 
-        <span
-          id="char-count"
-          className={`${getValidationClasses()}`}
-          aria-live="polite"
-        >
+        <span id="char-count" className={`${getValidationClasses()}`} aria-live="polite">
           {currentLength.toLocaleString()} / {MAX_LENGTH.toLocaleString()}
         </span>
       </div>

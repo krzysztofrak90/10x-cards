@@ -26,12 +26,7 @@ const MAX_BACK_LENGTH = 500;
  *
  * Supports inline editing mode with character count validation
  */
-export function FlashcardListItem({
-  flashcard,
-  onAccept,
-  onEdit,
-  onReject,
-}: FlashcardListItemProps) {
+export function FlashcardListItem({ flashcard, onAccept, onEdit, onReject }: FlashcardListItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedFront, setEditedFront] = useState(flashcard.front);
   const [editedBack, setEditedBack] = useState(flashcard.back);
@@ -84,11 +79,7 @@ export function FlashcardListItem({
    * Handles flashcard rejection
    */
   const handleRejectClick = () => {
-    if (
-      confirm(
-        "Czy na pewno chcesz odrzucić tę fiszkę? Tej operacji nie można cofnąć."
-      )
-    ) {
+    if (confirm("Czy na pewno chcesz odrzucić tę fiszkę? Tej operacji nie można cofnąć.")) {
       onReject(flashcard.id);
     }
   };
@@ -121,18 +112,12 @@ export function FlashcardListItem({
                 id={`front-${flashcard.id}`}
                 value={editedFront}
                 onChange={(e) => setEditedFront(e.target.value)}
-                className={`min-h-[80px] ${
-                  editedFront.length > MAX_FRONT_LENGTH
-                    ? "border-red-500"
-                    : ""
-                }`}
+                className={`min-h-[80px] ${editedFront.length > MAX_FRONT_LENGTH ? "border-red-500" : ""}`}
                 maxLength={MAX_FRONT_LENGTH + 50}
               />
               <p
                 className={`text-sm ${
-                  editedFront.length > MAX_FRONT_LENGTH
-                    ? "text-red-600"
-                    : "text-muted-foreground"
+                  editedFront.length > MAX_FRONT_LENGTH ? "text-red-600" : "text-muted-foreground"
                 }`}
               >
                 {editedFront.length} / {MAX_FRONT_LENGTH}
@@ -145,17 +130,11 @@ export function FlashcardListItem({
                 id={`back-${flashcard.id}`}
                 value={editedBack}
                 onChange={(e) => setEditedBack(e.target.value)}
-                className={`min-h-[120px] ${
-                  editedBack.length > MAX_BACK_LENGTH ? "border-red-500" : ""
-                }`}
+                className={`min-h-[120px] ${editedBack.length > MAX_BACK_LENGTH ? "border-red-500" : ""}`}
                 maxLength={MAX_BACK_LENGTH + 50}
               />
               <p
-                className={`text-sm ${
-                  editedBack.length > MAX_BACK_LENGTH
-                    ? "text-red-600"
-                    : "text-muted-foreground"
-                }`}
+                className={`text-sm ${editedBack.length > MAX_BACK_LENGTH ? "text-red-600" : "text-muted-foreground"}`}
               >
                 {editedBack.length} / {MAX_BACK_LENGTH}
               </p>
@@ -188,20 +167,13 @@ export function FlashcardListItem({
             </div>
 
             <div className="flex gap-2 justify-end flex-wrap">
-              <Button
-                variant="outline"
-                onClick={handleRejectClick}
-                className="text-red-600 hover:text-red-700"
-              >
+              <Button variant="outline" onClick={handleRejectClick} className="text-red-600 hover:text-red-700">
                 Odrzuć
               </Button>
               <Button variant="outline" onClick={handleEditClick}>
                 Edytuj
               </Button>
-              <Button
-                variant={flashcard.accepted ? "secondary" : "default"}
-                onClick={handleAcceptClick}
-              >
+              <Button variant={flashcard.accepted ? "secondary" : "default"} onClick={handleAcceptClick}>
                 {flashcard.accepted ? "Cofnij akceptację" : "Zatwierdź"}
               </Button>
             </div>

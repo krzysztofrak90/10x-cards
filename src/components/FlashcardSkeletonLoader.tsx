@@ -13,9 +13,7 @@ interface FlashcardSkeletonLoaderProps {
  *
  * @param count - Number of skeleton cards to display (default: 3)
  */
-export function FlashcardSkeletonLoader({
-  count = 3,
-}: FlashcardSkeletonLoaderProps) {
+export function FlashcardSkeletonLoader({ count = 3 }: FlashcardSkeletonLoaderProps) {
   return (
     <div className="space-y-4" role="status" aria-live="polite" aria-label="Ładowanie fiszek">
       {Array.from({ length: count }).map((_, index) => (

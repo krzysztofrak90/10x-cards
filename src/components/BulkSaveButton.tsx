@@ -44,9 +44,7 @@ export function BulkSaveButton({
           className="w-full sm:w-auto"
           aria-busy={isSaving}
         >
-          {isSaving
-            ? "Zapisywanie..."
-            : `Zapisz zaakceptowane (${acceptedCount})`}
+          {isSaving ? "Zapisywanie..." : `Zapisz zaakceptowane (${acceptedCount})`}
         </Button>
 
         <Button

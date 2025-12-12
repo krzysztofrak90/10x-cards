@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 
 interface Flashcard {
   id: number;
@@ -43,10 +43,10 @@ export default function StudySession() {
     setError(null);
 
     try {
-      const response = await fetch('/api/flashcards');
+      const response = await fetch("/api/flashcards");
 
       if (!response.ok) {
-        throw new Error('Nie udało się pobrać fiszek');
+        throw new Error("Nie udało się pobrać fiszek");
       }
 
       const data = await response.json();
@@ -59,7 +59,7 @@ export default function StudySession() {
         setFlashcards(shuffled);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd podczas ładowania fiszek');
+      setError(err instanceof Error ? err.message : "Wystąpił błąd podczas ładowania fiszek");
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +71,7 @@ export default function StudySession() {
 
   const handleAnswer = (wasCorrect: boolean) => {
     // Update stats
-    setSessionStats(prev => ({
+    setSessionStats((prev) => ({
       ...prev,
       correct: prev.correct + (wasCorrect ? 1 : 0),
       incorrect: prev.incorrect + (wasCorrect ? 0 : 1),
@@ -83,7 +83,7 @@ export default function StudySession() {
       setShowBack(false);
     } else {
       // Session completed
-      setSessionStats(prev => ({
+      setSessionStats((prev) => ({
         ...prev,
         completed: true,
       }));
@@ -105,12 +105,12 @@ export default function StudySession() {
 
   const getSourceLabel = (source: string) => {
     switch (source) {
-      case 'manual':
-        return 'Ręczne';
-      case 'ai-full':
-        return 'AI';
-      case 'ai-edited':
-        return 'AI (edytowane)';
+      case "manual":
+        return "Ręczne";
+      case "ai-full":
+        return "AI";
+      case "ai-edited":
+        return "AI (edytowane)";
       default:
         return source;
     }
@@ -118,14 +118,14 @@ export default function StudySession() {
 
   const getSourceVariant = (source: string): "default" | "secondary" | "outline" => {
     switch (source) {
-      case 'manual':
-        return 'outline';
-      case 'ai-full':
-        return 'default';
-      case 'ai-edited':
-        return 'secondary';
+      case "manual":
+        return "outline";
+      case "ai-full":
+        return "default";
+      case "ai-edited":
+        return "secondary";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
@@ -168,15 +168,11 @@ export default function StudySession() {
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <Card>
           <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center">
-              Sesja zakończona!
-            </CardTitle>
+            <CardTitle className="text-3xl font-bold text-center">Sesja zakończona!</CardTitle>
           </CardHeader>
           <CardContent className="p-8 space-y-6">
             <div className="text-center space-y-4">
-              <div className="text-6xl font-bold text-green-600">
-                {percentage}%
-              </div>
+              <div className="text-6xl font-bold text-green-600">{percentage}%</div>
               <p className="text-xl text-gray-600">Twój wynik</p>
             </div>
 
@@ -196,7 +192,7 @@ export default function StudySession() {
                 Rozpocznij nową sesję
               </Button>
               <Button
-                onClick={() => window.location.href = '/flashcards'}
+                onClick={() => (window.location.href = "/flashcards")}
                 variant="outline"
                 size="lg"
                 className="w-full"
@@ -252,26 +248,30 @@ export default function StudySession() {
           {/* Flashcard */}
           <div
             className="relative min-h-[300px] cursor-pointer select-none"
+            role="button"
+            tabIndex={0}
             onClick={flipCard}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                flipCard();
+              }
+            }}
           >
             <div className="absolute top-0 right-0">
-              <Badge variant={getSourceVariant(currentCard.source)}>
-                {getSourceLabel(currentCard.source)}
-              </Badge>
+              <Badge variant={getSourceVariant(currentCard.source)}>{getSourceLabel(currentCard.source)}</Badge>
             </div>
 
             <div className="flex flex-col items-center justify-center min-h-[300px] space-y-4">
               <div className="text-center space-y-2">
-                <p className="text-sm text-gray-500 uppercase tracking-wide">
-                  {showBack ? 'Odpowiedź' : 'Pytanie'}
-                </p>
+                <p className="text-sm text-gray-500 uppercase tracking-wide">{showBack ? "Odpowiedź" : "Pytanie"}</p>
                 <p className="text-2xl font-medium leading-relaxed px-4">
                   {showBack ? currentCard.back : currentCard.front}
                 </p>
               </div>
 
               <p className="text-sm text-gray-400 italic">
-                {showBack ? 'Kliknij aby ukryć odpowiedź' : 'Kliknij aby pokazać odpowiedź'}
+                {showBack ? "Kliknij aby ukryć odpowiedź" : "Kliknij aby pokazać odpowiedź"}
               </p>
             </div>
           </div>

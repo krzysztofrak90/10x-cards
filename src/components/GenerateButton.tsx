@@ -12,19 +12,9 @@ interface GenerateButtonProps {
  * Triggers API request to generate flashcards from source text
  * Disabled when text validation fails or during loading
  */
-export function GenerateButton({
-  onClick,
-  disabled = false,
-  isLoading = false,
-}: GenerateButtonProps) {
+export function GenerateButton({ onClick, disabled = false, isLoading = false }: GenerateButtonProps) {
   return (
-    <Button
-      onClick={onClick}
-      disabled={disabled}
-      size="lg"
-      className="w-full sm:w-auto"
-      aria-busy={isLoading}
-    >
+    <Button onClick={onClick} disabled={disabled} size="lg" className="w-full sm:w-auto" aria-busy={isLoading}>
       {isLoading ? "Generuję..." : "Generuj fiszki"}
     </Button>
   );

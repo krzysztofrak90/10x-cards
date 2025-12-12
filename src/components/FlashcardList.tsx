@@ -14,17 +14,12 @@ interface FlashcardListProps {
  * Displays all generated flashcard proposals
  * Delegates individual flashcard actions to FlashcardListItem
  */
-export function FlashcardList({
-  flashcards,
-  onAccept,
-  onEdit,
-  onReject,
-}: FlashcardListProps) {
+export function FlashcardList({ flashcards, onAccept, onEdit, onReject }: FlashcardListProps) {
   if (flashcards.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">
-          Brak wygenerowanych fiszek. Wklej tekst i kliknij "Generuj fiszki".
+          Brak wygenerowanych fiszek. Wklej tekst i kliknij &quot;Generuj fiszki&quot;.
         </p>
       </div>
     );
@@ -35,12 +30,9 @@ export function FlashcardList({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold">
-          Wygenerowane propozycje ({flashcards.length})
-        </h3>
+        <h3 className="text-xl font-semibold">Wygenerowane propozycje ({flashcards.length})</h3>
         <p className="text-sm text-muted-foreground">
-          Zaakceptowano: <span className="font-medium">{acceptedCount}</span> /{" "}
-          {flashcards.length}
+          Zaakceptowano: <span className="font-medium">{acceptedCount}</span> / {flashcards.length}
         </p>
       </div>
 

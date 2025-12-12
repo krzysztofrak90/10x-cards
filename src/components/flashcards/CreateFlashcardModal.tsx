@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Button } from '../ui/button';
-import { Label } from '../ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { useState } from "react";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface CreateFlashcardModalProps {
   onClose: () => void;
@@ -9,21 +9,21 @@ interface CreateFlashcardModalProps {
 }
 
 export default function CreateFlashcardModal({ onClose, onSuccess }: CreateFlashcardModalProps) {
-  const [front, setFront] = useState('');
-  const [back, setBack] = useState('');
-  const [error, setError] = useState('');
+  const [front, setFront] = useState("");
+  const [back, setBack] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const response = await fetch('/api/flashcards/create', {
-        method: 'POST',
+      const response = await fetch("/api/flashcards/create", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ front, back }),
       });
@@ -31,13 +31,13 @@ export default function CreateFlashcardModal({ onClose, onSuccess }: CreateFlash
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Błąd tworzenia fiszki');
+        throw new Error(data.error || "Błąd tworzenia fiszki");
       }
 
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd');
+      setError(err instanceof Error ? err.message : "Wystąpił błąd");
     } finally {
       setLoading(false);
     }
@@ -51,11 +51,7 @@ export default function CreateFlashcardModal({ onClose, onSuccess }: CreateFlash
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
+            {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
 
             <div className="space-y-2">
               <Label htmlFor="front">Przód fiszki</Label>
@@ -89,7 +85,7 @@ export default function CreateFlashcardModal({ onClose, onSuccess }: CreateFlash
 
             <div className="flex gap-2">
               <Button type="submit" className="flex-1" disabled={loading}>
-                {loading ? 'Zapisywanie...' : 'Dodaj fiszkę'}
+                {loading ? "Zapisywanie..." : "Dodaj fiszkę"}
               </Button>
               <Button type="button" variant="outline" onClick={onClose}>
                 Anuluj

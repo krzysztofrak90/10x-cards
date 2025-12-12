@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Button } from './ui/button';
+import { useState } from "react";
+import { Button } from "./ui/button";
 
 interface NavigationProps {
   user?: {
@@ -14,12 +14,12 @@ export default function Navigation({ user, currentPath }: NavigationProps) {
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
+      await fetch("/api/auth/logout", {
+        method: "POST",
       });
-      window.location.href = '/login';
+      window.location.href = "/login";
     } catch (error) {
-      console.error('Błąd wylogowania:', error);
+      console.error("Błąd wylogowania:", error);
       setLoggingOut(false);
     }
   };
@@ -39,9 +39,9 @@ export default function Navigation({ user, currentPath }: NavigationProps) {
                 <a
                   href="/generate"
                   className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    currentPath === '/generate'
-                      ? 'border-blue-500 text-gray-900'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    currentPath === "/generate"
+                      ? "border-blue-500 text-gray-900"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                   }`}
                 >
                   Generuj
@@ -49,9 +49,9 @@ export default function Navigation({ user, currentPath }: NavigationProps) {
                 <a
                   href="/flashcards"
                   className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    currentPath === '/flashcards'
-                      ? 'border-blue-500 text-gray-900'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    currentPath === "/flashcards"
+                      ? "border-blue-500 text-gray-900"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                   }`}
                 >
                   Moja Kolekcja
@@ -59,9 +59,9 @@ export default function Navigation({ user, currentPath }: NavigationProps) {
                 <a
                   href="/study"
                   className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    currentPath === '/study'
-                      ? 'border-blue-500 text-gray-900'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    currentPath === "/study"
+                      ? "border-blue-500 text-gray-900"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                   }`}
                 >
                   Nauka
@@ -73,21 +73,13 @@ export default function Navigation({ user, currentPath }: NavigationProps) {
             {user ? (
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-700">{user.email}</span>
-                <Button
-                  onClick={handleLogout}
-                  disabled={loggingOut}
-                  variant="outline"
-                  size="sm"
-                >
-                  {loggingOut ? 'Wylogowywanie...' : 'Wyloguj'}
+                <Button onClick={handleLogout} disabled={loggingOut} variant="outline" size="sm">
+                  {loggingOut ? "Wylogowywanie..." : "Wyloguj"}
                 </Button>
               </div>
             ) : (
               <div className="flex items-center space-x-4">
-                <a
-                  href="/login"
-                  className="text-gray-700 hover:text-gray-900 text-sm font-medium"
-                >
+                <a href="/login" className="text-gray-700 hover:text-gray-900 text-sm font-medium">
                   Zaloguj się
                 </a>
                 <a href="/register">

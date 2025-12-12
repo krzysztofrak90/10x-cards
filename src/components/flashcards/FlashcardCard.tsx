@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Button } from '../ui/button';
-import { Card, CardContent } from '../ui/card';
-import { Badge } from '../ui/badge';
+import { useState } from "react";
+import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
+import { Badge } from "../ui/badge";
 
 interface Flashcard {
   id: number;
@@ -22,26 +22,26 @@ export default function FlashcardCard({ flashcard, onEdit, onDelete }: Flashcard
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm('Czy na pewno chcesz usunąć tę fiszkę?')) {
+    if (!confirm("Czy na pewno chcesz usunąć tę fiszkę?")) {
       return;
     }
 
     setIsDeleting(true);
     try {
       await onDelete(flashcard.id);
-    } catch (error) {
+    } catch {
       setIsDeleting(false);
     }
   };
 
   const getSourceLabel = (source: string) => {
     switch (source) {
-      case 'manual':
-        return 'Ręczne';
-      case 'ai-full':
-        return 'AI';
-      case 'ai-edited':
-        return 'AI (edytowane)';
+      case "manual":
+        return "Ręczne";
+      case "ai-full":
+        return "AI";
+      case "ai-edited":
+        return "AI (edytowane)";
       default:
         return source;
     }
@@ -49,14 +49,14 @@ export default function FlashcardCard({ flashcard, onEdit, onDelete }: Flashcard
 
   const getSourceVariant = (source: string): "default" | "secondary" | "outline" => {
     switch (source) {
-      case 'manual':
-        return 'outline';
-      case 'ai-full':
-        return 'default';
-      case 'ai-edited':
-        return 'secondary';
+      case "manual":
+        return "outline";
+      case "ai-full":
+        return "default";
+      case "ai-edited":
+        return "secondary";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
@@ -64,31 +64,28 @@ export default function FlashcardCard({ flashcard, onEdit, onDelete }: Flashcard
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-3">
-          <Badge variant={getSourceVariant(flashcard.source)}>
-            {getSourceLabel(flashcard.source)}
-          </Badge>
+          <Badge variant={getSourceVariant(flashcard.source)}>{getSourceLabel(flashcard.source)}</Badge>
           <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onEdit(flashcard)}
-            >
+            <Button size="sm" variant="outline" onClick={() => onEdit(flashcard)}>
               Edytuj
             </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Usuwanie...' : 'Usuń'}
+            <Button size="sm" variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? "Usuwanie..." : "Usuń"}
             </Button>
           </div>
         </div>
 
         <div
           className="cursor-pointer"
+          role="button"
+          tabIndex={0}
           onClick={() => setShowBack(!showBack)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setShowBack(!showBack);
+            }
+          }}
         >
           <div className="mb-3">
             <p className="text-sm text-gray-500 mb-1">Przód:</p>
@@ -103,12 +100,12 @@ export default function FlashcardCard({ flashcard, onEdit, onDelete }: Flashcard
           )}
 
           <p className="text-xs text-gray-400 mt-2">
-            {showBack ? 'Kliknij aby ukryć odpowiedź' : 'Kliknij aby pokazać odpowiedź'}
+            {showBack ? "Kliknij aby ukryć odpowiedź" : "Kliknij aby pokazać odpowiedź"}
           </p>
         </div>
 
         <p className="text-xs text-gray-400 mt-3">
-          Utworzono: {new Date(flashcard.created_at).toLocaleDateString('pl-PL')}
+          Utworzono: {new Date(flashcard.created_at).toLocaleDateString("pl-PL")}
         </p>
       </CardContent>
     </Card>

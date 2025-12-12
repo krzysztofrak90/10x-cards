@@ -1,9 +1,5 @@
 import { useState } from "react";
-import type {
-  CreateGenerationCommand,
-  CreateGenerationResponse,
-  FlashcardProposalDTO,
-} from "@/types";
+import type { CreateGenerationCommand, CreateGenerationResponse, FlashcardProposalDTO } from "@/types";
 
 /**
  * FlashcardProposalViewModel - Extended model for managing flashcard proposal state
@@ -68,23 +64,19 @@ export function useGenerateFlashcards() {
       const data: CreateGenerationResponse = await response.json();
 
       // Transform proposals to view models with client-side IDs
-      const viewModels: FlashcardProposalViewModel[] =
-        data.flashcards_proposals.map((proposal, index) => ({
-          ...proposal,
-          accepted: false,
-          edited: false,
-          id: `proposal-${Date.now()}-${index}`,
-        }));
+      const viewModels: FlashcardProposalViewModel[] = data.flashcards_proposals.map((proposal, index) => ({
+        ...proposal,
+        accepted: false,
+        edited: false,
+        id: `proposal-${Date.now()}-${index}`,
+      }));
 
       setFlashcards(viewModels);
       setGenerationId(data.generation_id);
 
       return { success: true, data };
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Wystąpił nieoczekiwany błąd.";
+      const message = error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd.";
       setErrorMessage(message);
       return { success: false, error: message };
     } finally {
@@ -112,13 +104,8 @@ export function useGenerateFlashcards() {
   /**
    * Updates a specific flashcard in the list
    */
-  const updateFlashcard = (
-    id: string,
-    updates: Partial<FlashcardProposalViewModel>
-  ) => {
-    setFlashcards((prev) =>
-      prev.map((card) => (card.id === id ? { ...card, ...updates } : card))
-    );
+  const updateFlashcard = (id: string, updates: Partial<FlashcardProposalViewModel>) => {
+    setFlashcards((prev) => prev.map((card) => (card.id === id ? { ...card, ...updates } : card)));
   };
 
   /**
@@ -132,11 +119,7 @@ export function useGenerateFlashcards() {
    * Toggles the accepted state of a flashcard
    */
   const toggleAccepted = (id: string) => {
-    setFlashcards((prev) =>
-      prev.map((card) =>
-        card.id === id ? { ...card, accepted: !card.accepted } : card
-      )
-    );
+    setFlashcards((prev) => prev.map((card) => (card.id === id ? { ...card, accepted: !card.accepted } : card)));
   };
 
   return {
