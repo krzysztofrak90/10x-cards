@@ -1,23 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// In CI, require environment variables from secrets
+// Use local Supabase (started with `npx supabase start`)
 const isCI = !!process.env.CI;
-const supabaseUrl = process.env.SUPABASE_URL || (isCI ? "" : "http://127.0.0.1:54331");
+const supabaseUrl = process.env.SUPABASE_URL || "http://127.0.0.1:54331";
 const supabaseKey =
   process.env.SUPABASE_KEY ||
-  (isCI
-    ? ""
-    : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0");
-
-// Validate that required environment variables are set in CI
-if (isCI && (!supabaseUrl || !supabaseKey)) {
-  throw new Error(
-    `Missing required environment variables in CI:\n` +
-      `SUPABASE_URL: ${supabaseUrl ? "✓" : "✗ MISSING"}\n` +
-      `SUPABASE_KEY: ${supabaseKey ? "✓" : "✗ MISSING"}\n` +
-      `Please configure these secrets in your GitHub repository settings.`
-  );
-}
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
 
 export default defineConfig({
   testDir: "./tests/e2e",

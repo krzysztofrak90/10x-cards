@@ -46,8 +46,7 @@ jobs:
       - name: Build project
         run: npm run build
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          # Supabase variables are loaded from middleware/db at runtime
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
       - name: Upload build artifacts
@@ -74,6 +73,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Start Supabase local instance
+        run: npx supabase start
+
+      - name: Verify Supabase is running
+        run: |
+          echo "Checking Supabase status..."
+          npx supabase status
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
@@ -86,8 +93,6 @@ jobs:
       - name: Run Playwright tests
         run: npm run test
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
       - name: Upload test results
@@ -97,3 +102,7 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+      - name: Stop Supabase
+        if: always()
+        run: npx supabase stop
