@@ -90,38 +90,48 @@ export class GenerationService {
     console.log("Calling AI service with model:", AI_MODEL);
     console.log("Source text length:", sourceText.length);
 
-    const prompt = `Przeanalizuj poniższy tekst i wygeneruj 5-8 fiszek edukacyjnych.
+    const prompt = `You are a flashcard generator for language learning.
 
-WAŻNE - ZASADY JĘZYKA:
-- Jeśli tekst jest w języku POLSKIM: generuj pytania i odpowiedzi PO POLSKU
-- Jeśli tekst jest w języku OBCYM (angielski, niemiecki, etc.):
-  * front: słówko/pojęcie/pytanie w ORYGINALNYM języku tekstu
-  * back: tłumaczenie/wyjaśnienie PO POLSKU
+CRITICAL RULES - LANGUAGE DETECTION:
+1. Detect the language of the input text
+2. If text is in POLISH → generate both front and back in POLISH
+3. If text is in ENGLISH or any other foreign language:
+   - front: MUST be in the ORIGINAL language (English)
+   - back: MUST be in POLISH (translation/explanation)
 
-Każda fiszka powinna:
-1. Koncentrować się na najważniejszych koncepcjach z tekstu
-2. Być konkretna i jednoznaczna
-3. Zawierać pełne odpowiedzi (bez odsyłania do tekstu źródłowego)
-4. Być zróżnicowana (różne typy: definicje, przykłady, porównania, zastosowania)
+EXAMPLES for English text:
 
-Dla tekstów obcojęzycznych priorytetyzuj:
-- Kluczowe słówka i zwroty
-- Idiomy i wyrażenia
-- Ważne pojęcia z kontekstem
-- Trudniejsze terminy wymagające zapamiętania
+✅ CORRECT:
+[
+  {"front": "Artificial Intelligence", "back": "Sztuczna inteligencja - technologia umożliwiająca maszynom wykonywanie zadań wymagających inteligencji"},
+  {"front": "Machine learning", "back": "Uczenie maszynowe - poddziedzina AI koncentrująca się na algorytmach uczących się z danych"},
+  {"front": "What is deep learning?", "back": "Głębokie uczenie - technika ML wykorzystująca sieci neuronowe z wieloma warstwami"}
+]
 
-Format odpowiedzi - JSON (tylko JSON, bez komentarzy):
+❌ WRONG - DO NOT DO THIS:
+[
+  {"front": "Sztuczna inteligencja", "back": "Technologia umożliwiająca..."},
+  {"front": "Co to jest uczenie maszynowe?", "back": "Poddziedzina AI..."}
+]
+
+Generate 5-8 flashcards. For foreign language texts, prioritize:
+- Key vocabulary and phrases (in original language)
+- Important concepts with context
+- Idioms and expressions
+- Difficult terms worth memorizing
+
+Return ONLY valid JSON array, no comments:
 [
   {
-    "front": "pytanie/termin (w języku oryginalnym tekstu)",
-    "back": "odpowiedź/tłumaczenie (po polsku jeśli tekst obcojęzyczny)"
+    "front": "term/phrase in original language",
+    "back": "Polish translation/explanation"
   }
 ]
 
-TEKST DO ANALIZY:
+TEXT TO ANALYZE:
 ${sourceText}
 
-Odpowiedź (tylko JSON):`;
+JSON response:`;
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
