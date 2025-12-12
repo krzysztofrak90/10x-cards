@@ -10,7 +10,7 @@ type TypedSupabaseClient = SupabaseClient<Database>;
 /**
  * Stała określająca model AI używany do generowania
  */
-const AI_MODEL = "anthropic/claude-3.5-sonnet";
+const AI_MODEL = "google/gemini-2.0-flash-exp:free";
 
 /**
  * Klucz API dla OpenRouter
