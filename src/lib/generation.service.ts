@@ -86,28 +86,38 @@ export class GenerationService {
       throw new Error("OPENROUTER_API_KEY nie jest skonfigurowany w zmiennych środowiskowych");
     }
 
-    const prompt = `Przeanalizuj poniższy tekst i wygeneruj 5-8 fiszek edukacyjnych. Każda fiszka powinna zawierać:
-- front: pytanie lub termin do zapamiętania (krótkie, jasne)
-- back: odpowiedź lub definicję (szczegółową, ale zwięzłą)
+    const prompt = `Przeanalizuj poniższy tekst i wygeneruj 5-8 fiszek edukacyjnych.
 
-Fiszki powinny:
+WAŻNE - ZASADY JĘZYKA:
+- Jeśli tekst jest w języku POLSKIM: generuj pytania i odpowiedzi PO POLSKU
+- Jeśli tekst jest w języku OBCYM (angielski, niemiecki, etc.):
+  * front: słówko/pojęcie/pytanie w ORYGINALNYM języku tekstu
+  * back: tłumaczenie/wyjaśnienie PO POLSKU
+
+Każda fiszka powinna:
 1. Koncentrować się na najważniejszych koncepcjach z tekstu
-2. Być konkretne i jednoznaczne
-3. Zawierać pełne odpowiedzi bez odsyłania do tekstu źródłowego
-4. Być zróżnicowane (różne typy pytań: definicje, przykłady, porównania, zastosowania)
+2. Być konkretna i jednoznaczna
+3. Zawierać pełne odpowiedzi (bez odsyłania do tekstu źródłowego)
+4. Być zróżnicowana (różne typy: definicje, przykłady, porównania, zastosowania)
 
-Zwróć wynik w formacie JSON jako tablicę obiektów:
+Dla tekstów obcojęzycznych priorytetyzuj:
+- Kluczowe słówka i zwroty
+- Idiomy i wyrażenia
+- Ważne pojęcia z kontekstem
+- Trudniejsze terminy wymagające zapamiętania
+
+Format odpowiedzi - JSON (tylko JSON, bez komentarzy):
 [
   {
-    "front": "pytanie lub termin",
-    "back": "odpowiedź lub definicja"
+    "front": "pytanie/termin (w języku oryginalnym tekstu)",
+    "back": "odpowiedź/tłumaczenie (po polsku jeśli tekst obcojęzyczny)"
   }
 ]
 
 TEKST DO ANALIZY:
 ${sourceText}
 
-Odpowiedź (tylko JSON, bez dodatkowych komentarzy):`;
+Odpowiedź (tylko JSON):`;
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
