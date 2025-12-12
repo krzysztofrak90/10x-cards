@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation';
+import FlashcardsList from '../components/flashcards/FlashcardsList';
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+---
+
+<Layout title="Moja Kolekcja - FlashLearn AI">
+  <Navigation user={user} currentPath="/flashcards" client:load />
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <FlashcardsList client:load />
+  </div>
+</Layout>

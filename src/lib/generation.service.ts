@@ -8,9 +8,14 @@ import type { FlashcardProposalDTO, CreateGenerationResponse } from '../types';
 type TypedSupabaseClient = SupabaseClient<Database>;
 
 /**
- * Stała określająca model AI używany do generowania (mock na potrzeby developmentu)
+ * Stała określająca model AI używany do generowania
  */
-const AI_MODEL = 'mock-gpt-4';
+const AI_MODEL = 'anthropic/claude-3.5-sonnet';
+
+/**
+ * Klucz API dla OpenRouter
+ */
+const OPENROUTER_API_KEY = import.meta.env.OPENROUTER_API_KEY;
 
 /**
  * Timeout dla operacji generowania przez AI (w milisekundach)
@@ -78,47 +83,107 @@ export class GenerationService {
   }
 
   /**
-   * Mock funkcji wywołującej serwis AI do generowania fiszek
-   * W przyszłości zostanie zastąpiony prawdziwą integracją z API AI
+   * Wywołuje serwis AI (OpenRouter) do generowania fiszek na podstawie tekstu źródłowego
    *
    * @param sourceText - Tekst źródłowy
    * @returns Tablica propozycji fiszek
+   * @throws Error jeśli wywołanie API się nie powiedzie
    */
   private async callAiService(sourceText: string): Promise<FlashcardProposalDTO[]> {
-    // Symulacja opóźnienia API (200-500ms)
-    await new Promise((resolve) => setTimeout(resolve, Math.random() * 300 + 200));
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY nie jest skonfigurowany w zmiennych środowiskowych');
+    }
 
-    // Mockowane propozycje fiszek
-    // W rzeczywistości tutaj byłoby wywołanie API AI
-    const mockProposals: FlashcardProposalDTO[] = [
-      {
-        front: 'Pytanie 1 wygenerowane przez AI',
-        back: 'Odpowiedź 1 na podstawie tekstu źródłowego',
-        source: 'ai-full',
-      },
-      {
-        front: 'Pytanie 2 wygenerowane przez AI',
-        back: 'Odpowiedź 2 na podstawie tekstu źródłowego',
-        source: 'ai-full',
-      },
-      {
-        front: 'Pytanie 3 wygenerowane przez AI',
-        back: 'Odpowiedź 3 na podstawie tekstu źródłowego',
-        source: 'ai-full',
-      },
-      {
-        front: 'Pytanie 4 wygenerowane przez AI',
-        back: 'Odpowiedź 4 na podstawie tekstu źródłowego',
-        source: 'ai-full',
-      },
-      {
-        front: 'Pytanie 5 wygenerowane przez AI',
-        back: 'Odpowiedź 5 na podstawie tekstu źródłowego',
-        source: 'ai-full',
-      },
-    ];
+    const prompt = `Przeanalizuj poniższy tekst i wygeneruj 5-8 fiszek edukacyjnych. Każda fiszka powinna zawierać:
+- front: pytanie lub termin do zapamiętania (krótkie, jasne)
+- back: odpowiedź lub definicję (szczegółową, ale zwięzłą)
 
-    return mockProposals;
+Fiszki powinny:
+1. Koncentrować się na najważniejszych koncepcjach z tekstu
+2. Być konkretne i jednoznaczne
+3. Zawierać pełne odpowiedzi bez odsyłania do tekstu źródłowego
+4. Być zróżnicowane (różne typy pytań: definicje, przykłady, porównania, zastosowania)
+
+Zwróć wynik w formacie JSON jako tablicę obiektów:
+[
+  {
+    "front": "pytanie lub termin",
+    "back": "odpowiedź lub definicja"
+  }
+]
+
+TEKST DO ANALIZY:
+${sourceText}
+
+Odpowiedź (tylko JSON, bez dodatkowych komentarzy):`;
+
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'HTTP-Referer': 'https://flashlearn-ai.com',
+          'X-Title': 'FlashLearn AI',
+        },
+        body: JSON.stringify({
+          model: AI_MODEL,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 2000,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `OpenRouter API error: ${response.status} ${response.statusText}. ${
+            errorData.error?.message || ''
+          }`
+        );
+      }
+
+      const data = await response.json();
+      const aiResponse = data.choices?.[0]?.message?.content;
+
+      if (!aiResponse) {
+        throw new Error('Brak odpowiedzi z API AI');
+      }
+
+      // Parsowanie JSON z odpowiedzi AI
+      // Czasami AI może dodać markdown code block, więc musimy to wyczyścić
+      const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) {
+        throw new Error('Nie znaleziono JSON w odpowiedzi AI');
+      }
+
+      const flashcardsData = JSON.parse(jsonMatch[0]) as Array<{
+        front: string;
+        back: string;
+      }>;
+
+      // Konwersja do naszego formatu DTO
+      const proposals: FlashcardProposalDTO[] = flashcardsData.map((card) => ({
+        front: card.front.trim(),
+        back: card.back.trim(),
+        source: 'ai-full',
+      }));
+
+      // Walidacja - sprawdź czy mamy przynajmniej jedną fiszkę
+      if (proposals.length === 0) {
+        throw new Error('AI nie wygenerowało żadnych fiszek');
+      }
+
+      return proposals;
+    } catch (error) {
+      console.error('[callAiService] Błąd podczas wywoływania OpenRouter API:', error);
+      throw error;
+    }
   }
 
   /**

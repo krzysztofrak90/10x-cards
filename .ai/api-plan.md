@@ -1,172 +1,471 @@
-# REST API Plan
+# Plan API - FlashLearn AI
 
-## 1. Resources
+## Architektura API
 
-- **Users**
-  - *Database Table*: `users`
-  - Managed through Supabase Auth; operations such as registration and login may be handled via Supabase or custom endpoints if needed.
+FlashLearn AI wykorzystuje **RESTful API** zbudowane na Astro Server Endpoints. Wszystkie endpointy są chronione przez:
+- **Supabase Auth** (JWT tokens)
+- **Row Level Security** na poziomie bazy danych
+- **Zod validation** dla wszystkich request payloadów
 
-- **Flashcards**
-  - *Database Table*: `flashcards`
-  - Fields include: `id`, `front`, `back`, `source`, `created_at`, `updated_at`, `generation_id`, `user_id`.
+## Konwencje
 
-- **Generations**
-  - *Database Table*: `generations`
-  - Stores metadata and results of AI generation requests (e.g., `model`, `generated_count`, `source_text_hash`, `source_text_length`, `generation_duration`).
+### Status Codes
+- `200 OK` - Sukces operacji GET, PUT
+- `201 Created` - Sukces operacji POST (utworzenie zasobu)
+- `204 No Content` - Sukces operacji DELETE
+- `400 Bad Request` - Błędne dane wejściowe (validation error)
+- `401 Unauthorized` - Brak lub nieprawidłowy token autoryzacji
+- `403 Forbidden` - Brak uprawnień do zasobu
+- `404 Not Found` - Zasób nie istnieje
+- `500 Internal Server Error` - Błąd serwera
 
-- **Generation Error Logs**
-  - *Database Table*: `generation_error_logs`
-  - Used for logging errors encountered during AI flashcard generation.
+### Headers
+```
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+```
 
-## 2. Endpoints
-
-### 2.2. Flashcards
-
-- **GET `/flashcards`**
-  - **Description**: Retrieve a paginated, filtered, and sortable list of flashcards for the authenticated user.
-  - **Query Parameters**:
-    - `page` (default: 1)
-    - `limit` (default: 10)
-    - `sort` (e.g., `created_at`)
-    - `order` (`asc` or `desc`)
-    - Optional filters (e.g., `source`, `generation_id`).
-  - **Response JSON**:
-    ```json
+### Error Response Format
+```json
+{
+  "error": "Human-readable error message",
+  "details": [
     {
-      "data": [
-        { "id": 1, "front": "Question", "back": "Answer", "source": "manual", "created_at": "...", "updated_at": "..." }
-      ],
-      "pagination": { "page": 1, "limit": 10, "total": 100 }
+      "field": "front",
+      "message": "Maksymalna długość to 200 znaków"
     }
-    ```
-  - **Errors**: 401 Unauthorized if token is invalid.
+  ]
+}
+```
 
-- **GET `/flashcards/{id}`**
-  - **Description**: Retrieve details for a specific flashcard.
-  - **Response JSON**: Flashcard object.
-  - **Errors**: 404 Not Found, 401 Unauthorized.
+---
 
-- **POST `/flashcards`**
-  - **Description**: Create one or more flashcards (manually or from AI generation).
-  - **Request JSON**:
-    ```json
+## Endpointy - Authentication
+
+### POST `/api/auth/register`
+Rejestracja nowego użytkownika.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "SecurePass123!"
+}
+```
+
+**Validation:**
+- `email`: Poprawny format email, unikalny w systemie
+- `password`: Minimum 6 znaków (preferowane 8+)
+
+**Response (201):**
+```json
+{
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com"
+  }
+}
+```
+
+**Errors:**
+- `400` - Nieprawidłowy email lub słabe hasło
+- `409` - Email już istnieje w systemie
+- `500` - Błąd Supabase Auth
+
+---
+
+### POST `/api/auth/login`
+Logowanie użytkownika.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "SecurePass123!"
+}
+```
+
+**Response (200):**
+```json
+{
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com"
+  }
+}
+```
+
+**Side Effects:**
+- Ustawia HTTP-only cookies: `sb-access-token`, `sb-refresh-token`
+- Session jest zarządzana przez Supabase
+
+**Errors:**
+- `400` - Brak wymaganych pól
+- `401` - Nieprawidłowe dane logowania
+- `500` - Błąd Supabase Auth
+
+---
+
+### POST `/api/auth/logout`
+Wylogowanie użytkownika.
+
+**Request:** Brak body (wykorzystuje cookies)
+
+**Response (200):**
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+**Side Effects:**
+- Usuwa cookies sesji
+- Invalidates JWT token w Supabase
+
+---
+
+## Endpointy - Flashcards
+
+### GET `/api/flashcards`
+Pobiera listę fiszek użytkownika.
+
+**Query Parameters:**
+- `source` (optional) - Filtruj po źródle: `ai-full`, `ai-edited`, `manual`
+- `page` (optional, default: 1) - Numer strony (dla paginacji)
+- `limit` (optional, default: 50) - Liczba wyników per strona
+- `sort` (optional, default: `created_at`) - Kolumna sortowania
+- `order` (optional, default: `desc`) - Kierunek sortowania: `asc`, `desc`
+
+**Example:**
+```
+GET /api/flashcards?source=ai-full&page=1&limit=20
+```
+
+**Response (200):**
+```json
+{
+  "flashcards": [
     {
-      "flashcards": [
-        {
-          "front": "Question 1",
-          "back": "Answer 1",
-          "source": "manual",
-          "generation_id": null
-        },
-        {
-          "front": "Question 2",
-          "back": "Answer 2",
-          "source": "ai-full",
-          "generation_id": 123
-        }
-      ]
+      "id": 1,
+      "front": "Co to jest React?",
+      "back": "Biblioteka JavaScript do budowania interfejsów użytkownika",
+      "source": "ai-full",
+      "generation_id": 42,
+      "created_at": "2025-01-15T10:30:00Z",
+      "updated_at": "2025-01-15T10:30:00Z"
     }
-    ```
-  - **Response JSON**:
-    ```json
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "pages": 8
+  }
+}
+```
+
+**Authorization:**
+- RLS automatycznie filtruje fiszki tylko tego użytkownika
+
+**Errors:**
+- `401` - Brak autoryzacji
+
+---
+
+### GET `/api/flashcards/:id`
+Pobiera szczegóły pojedynczej fiszki.
+
+**Response (200):**
+```json
+{
+  "id": 1,
+  "front": "Co to jest React?",
+  "back": "Biblioteka JavaScript do budowania interfejsów użytkownika",
+  "source": "ai-full",
+  "generation_id": 42,
+  "created_at": "2025-01-15T10:30:00Z",
+  "updated_at": "2025-01-15T10:30:00Z"
+}
+```
+
+**Errors:**
+- `401` - Brak autoryzacji
+- `404` - Fiszka nie istnieje lub nie należy do użytkownika (RLS)
+
+---
+
+### POST `/api/flashcards`
+Tworzy nowe fiszki (bulk create - jedna lub więcej).
+
+**Request Body:**
+```json
+{
+  "flashcards": [
     {
-      "flashcards": [
-        { "id": 1, "front": "Question 1", "back": "Answer 1", "source": "manual", "generation_id": null },
-        { "id": 2, "front": "Question 2", "back": "Answer 2", "source": "ai-full", "generation_id": 123 }
-      ]
-    }
-    ```
-  - **Validations**:
-    - `front` maximum length: 200 characters.
-    - `back` maximum length: 500 characters.
-    - `source`: Must be one of `ai-full`, `ai-edited`, or `manual`.
-    - `generation_id`: Required for `ai-full` and `ai-edited` sources, must be null for `manual` source.
-  - **Errors**: 400 for invalid inputs, including validation errors for any flashcard in the array.
-
-- **PUT `/flashcards/{id}`**
-  - **Description**: Edit an existing flashcard.
-  - **Request JSON**: Fields to update.
-  - **Response JSON**: Updated flashcard object.
-  - **Errors**: 400 for invalid input, 404 if flashcard not found, 401 Unauthorized.
-
-- **DELETE `/flashcards/{id}`**
-  - **Description**: Delete a flashcard.
-  - **Response JSON**: Success message.
-  - **Errors**: 404 if flashcard not found, 401 Unauthorized.
-
-### 2.3. Generations
-
-- **POST `/generations`**
-  - **Description**: Initiate the AI generation process for flashcards proposals based on user-provided text.
-  - **Request JSON**:
-    ```json
+      "front": "Pytanie 1",
+      "back": "Odpowiedź 1",
+      "source": "manual",
+      "generation_id": null
+    },
     {
-      "source_text": "User provided text (1000 to 10000 characters)",
+      "front": "Pytanie 2",
+      "back": "Odpowiedź 2",
+      "source": "ai-full",
+      "generation_id": 42
     }
-    ```
-  - **Business Logic**:
-    - Validate that `source_text` length is between 1000 and 10000 characters.
-    - Call the AI service to generate flashcards proposals.
-    - Store the generation metadata and return flashcard proposals to the user.
-  - **Response JSON**:
-    ```json
+  ]
+}
+```
+
+**Validation:**
+- `front`: Required, max 200 znaków
+- `back`: Required, max 500 znaków
+- `source`: Required, enum: `'ai-full'`, `'ai-edited'`, `'manual'`
+- `generation_id`:
+  - Required dla `ai-full` i `ai-edited`
+  - Musi być `null` dla `manual`
+  - Musi istnieć w tabeli `generations` i należeć do użytkownika
+
+**Response (201):**
+```json
+{
+  "flashcards": [
     {
-      "generation_id": 123,
-      "flashcards_proposals": [
-         { "front": "Generated Question", "back": "Generated Answer", "source": "ai-full" }
-      ],
-      "generated_count": 5
+      "id": 1,
+      "front": "Pytanie 1",
+      "back": "Odpowiedź 1",
+      "source": "manual",
+      "generation_id": null,
+      "created_at": "2025-01-15T10:30:00Z"
     }
-    ```
-  - **Errors**:
-    - 400: Invalid input.
-    - 500: AI service errors (logs recorded in `generation_error_logs`).
+  ],
+  "created_count": 1
+}
+```
 
-- **GET `/generations`**
-  - **Description**: Retrieve a list of generation requests for the authenticated user.
-  - **Query Parameters**: Supports pagination as needed.
-  - **Response JSON**: List of generation objects with metadata.
+**Errors:**
+- `400` - Validation errors (każda fiszka jest walidowana osobno)
+- `401` - Brak autoryzacji
+- `500` - Błąd zapisu do bazy
 
-- **GET `/generations/{id}`**
-  - **Description**: Retrieve detailed information of a specific generation including its flashcards.
-  - **Response JSON**: Generation details and associated flashcards.
-  - **Errors**: 404 Not Found.
+---
 
-### 2.4. Generation Error Logs
+### PUT `/api/flashcards/:id`
+Aktualizuje istniejącą fiszkę.
 
-*(Typically used internally or by admin users)*
+**Request Body:**
+```json
+{
+  "front": "Zaktualizowane pytanie",
+  "back": "Zaktualizowana odpowiedź"
+}
+```
 
-- **GET `/generation-error-logs`**
-  - **Description**: Retrieve error logs for AI flashcard generation for the authenticated user or admin.
-  - **Response JSON**: List of error log objects.
-  - **Errors**:
-    - 401 Unauthorized if token is invalid.
-    - 403 Forbidden if access is restricted to admin users.
+**Validation:**
+- Wszystkie pola opcjonalne (można update część pól)
+- `front`: max 200 znaków (jeśli podane)
+- `back`: max 500 znaków (jeśli podane)
+- `source` nie może być zmieniony przez ten endpoint
 
-## 3. Authentication and Authorization
+**Response (200):**
+```json
+{
+  "id": 1,
+  "front": "Zaktualizowane pytanie",
+  "back": "Zaktualizowana odpowiedź",
+  "source": "manual",
+  "generation_id": null,
+  "created_at": "2025-01-15T10:30:00Z",
+  "updated_at": "2025-01-15T11:45:00Z"
+}
+```
 
-- **Mechanism**: Token-based authentication using Supabase Auth.
-- **Process**:
-  - Users authenticate via `/auth/login` or `/auth/register`, receiving a bearer token.
-  - Protected endpoints require the token in the `Authorization` header.
-  - Database-level Row-Level Security (RLS) ensures that users access only records with matching `user_id`.
-- **Additional Considerations**: Use HTTPS, rate limiting, and secure error messaging to mitigate security risks.
+**Side Effects:**
+- Trigger automatycznie update'uje `updated_at`
 
-## 4. Validation and Business Logic
+**Errors:**
+- `400` - Validation errors
+- `401` - Brak autoryzacji
+- `404` - Fiszka nie istnieje lub nie należy do użytkownika
 
-- **Validation Rules**:
-  - **Flashcards**:
-    - `front`: Maximum length of 200 characters.
-    - `back`: Maximum length of 500 characters.
-    - `source`: Must be one of `ai-full`, `ai-edited`, or `manual`.
-  - **Generations**:
-    - `source_text`: Must have a length between 1000 and 10000 characters.
-    - `source_text_hash`: Computed for duplicate detection.
+---
 
-- **Business Logic Implementation**:
-  - **AI Generation**:
-    - Validate inputs and call the AI service upon POST `/generations`.
-    - Record generation metadata (model, generated_count, duration) and send generated flashcards proposals to the user.
-    - Log any errors in `generation_error_logs` for auditing and debugging.
-  - **Flashcard Management**:
-    - Automatic update of the `updated_at` field via database triggers when flashcards are modified.
+### DELETE `/api/flashcards/:id`
+Usuwa fiszkę.
+
+**Response (200):**
+```json
+{
+  "message": "Fiszka została usunięta",
+  "id": 1
+}
+```
+
+**Errors:**
+- `401` - Brak autoryzacji
+- `404` - Fiszka nie istnieje lub nie należy do użytkownika
+
+---
+
+## Endpointy - AI Generation
+
+### POST `/api/generations`
+Inicjuje proces generowania fiszek przez AI.
+
+**Request Body:**
+```json
+{
+  "source_text": "Długi tekst do analizy (min 800, max 12000 znaków)..."
+}
+```
+
+**Validation:**
+- `source_text`: Required, min 800 znaków, max 12000 znaków
+
+**Business Logic:**
+1. Walidacja długości tekstu
+2. Obliczenie SHA-256 hash z `source_text`
+3. Wywołanie OpenRouter API (Claude 3.5 Sonnet)
+4. Parsowanie JSON response z AI
+5. Zapis metadanych do tabeli `generations`
+6. Zwrócenie propozycji fiszek do frontend
+
+**Response (201):**
+```json
+{
+  "generation_id": 42,
+  "flashcards_proposals": [
+    {
+      "front": "Co to jest TypeScript?",
+      "back": "Nadzbiór JavaScript z statycznym typowaniem",
+      "source": "ai-full"
+    },
+    {
+      "front": "Jakie są zalety TypeScript?",
+      "back": "Lepsze tooling, wczesne wykrywanie błędów, dokumentacja przez typy",
+      "source": "ai-full"
+    }
+  ],
+  "generated_count": 5
+}
+```
+
+**Timeout:**
+- Maksymalny czas: 60 sekund
+- Po przekroczeniu zwraca `500` z timeout error
+
+**Errors:**
+- `400` - Validation error (tekst za krótki/długi)
+- `401` - Brak autoryzacji
+- `500` - Błąd AI API (zapisywany do `generation_error_logs`)
+  - Brak klucza API
+  - Rate limit exceeded
+  - AI model unavailable
+  - Parsing error (AI nie zwrócił valid JSON)
+
+**Error Logging:**
+- Każdy błąd 500 jest logowany do `generation_error_logs`:
+  ```json
+  {
+    "user_id": "uuid",
+    "model": "anthropic/claude-3.5-sonnet",
+    "error_code": "OPENROUTER_API_ERROR",
+    "error_message": "Rate limit exceeded",
+    "source_text_hash": "sha256...",
+    "source_text_length": 1500
+  }
+  ```
+
+---
+
+### GET `/api/generations`
+Pobiera historię generacji użytkownika.
+
+**Query Parameters:**
+- `page`, `limit`, `sort`, `order` - analogicznie jak w flashcards
+
+**Response (200):**
+```json
+{
+  "generations": [
+    {
+      "id": 42,
+      "model": "anthropic/claude-3.5-sonnet",
+      "generated_count": 5,
+      "accepted_unedited_count": 3,
+      "accepted_edited_count": 1,
+      "source_text_length": 1500,
+      "generation_duration": 2340,
+      "created_at": "2025-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+**Use Cases:**
+- Wyświetlanie historii generacji w UI
+- Analityka użycia AI
+- Cost tracking
+
+---
+
+### GET `/api/generations/:id`
+Pobiera szczegóły konkretnej generacji wraz z powiązanymi fiszkami.
+
+**Response (200):**
+```json
+{
+  "id": 42,
+  "model": "anthropic/claude-3.5-sonnet",
+  "generated_count": 5,
+  "accepted_unedited_count": 3,
+  "accepted_edited_count": 1,
+  "source_text_hash": "abc123...",
+  "source_text_length": 1500,
+  "generation_duration": 2340,
+  "created_at": "2025-01-15T10:30:00Z",
+  "flashcards": [
+    {
+      "id": 1,
+      "front": "...",
+      "back": "...",
+      "source": "ai-full"
+    }
+  ]
+}
+```
+
+**Errors:**
+- `401` - Brak autoryzacji
+- `404` - Generacja nie istnieje lub nie należy do użytkownika
+
+---
+
+## Security & Best Practices
+
+### Authentication Flow
+1. User loguje się przez `/api/auth/login`
+2. Backend ustawia HTTP-only cookies z JWT
+3. Każdy protected endpoint:
+   - Czyta cookies
+   - Weryfikuje JWT przez Supabase
+   - Uzyskuje `user_id` z tokena
+   - RLS w bazie automatycznie filtruje dane
+
+### Rate Limiting (opcjonalne w production)
+- `/api/generations`: Max 10 requestów / godzinę per user
+- `/api/auth/login`: Max 5 prób / 15 minut per IP
+
+### CORS
+- Development: `http://localhost:4321`
+- Production: Tylko frontend domain
+
+### Input Sanitization
+- Wszystkie endpointy używają **Zod** do walidacji
+- HTML entities są escapowane w responses
+- SQL injection jest niemożliwy dzięki Supabase SDK (prepared statements)
+
+### Logging
+- Wszystkie requesty logowane w console (development)
+- Production: Structured logging do Supabase logs lub external service
+- PII (email, hasła) nigdy nie są logowane

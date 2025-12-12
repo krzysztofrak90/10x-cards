@@ -1,8 +1,74 @@
 ---
-import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
+import Navigation from "../components/Navigation";
+import { Button } from "../components/ui/button";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
 ---
 
-<Layout>
-  <Welcome />
+<Layout title="FlashLearn AI - Inteligentne fiszki edukacyjne">
+  <Navigation user={user} currentPath="/" client:load />
+  <main class="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div class="text-center">
+        <h1 class="text-5xl font-bold text-gray-900 mb-6">
+          FlashLearn AI
+        </h1>
+        <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          Inteligentne fiszki edukacyjne generowane przez AI.
+          Przyspiesz proces nauki i zapamiętuj więcej w krótszym czasie.
+        </p>
+        <div class="flex justify-center gap-4">
+          {user ? (
+            <a href="/generate">
+              <Button size="lg" client:load>
+                Generuj fiszki
+              </Button>
+            </a>
+          ) : (
+            <>
+              <a href="/register">
+                <Button size="lg" client:load>
+                  Rozpocznij za darmo
+                </Button>
+              </a>
+              <a href="/login">
+                <Button variant="outline" size="lg" client:load>
+                  Zaloguj się
+                </Button>
+              </a>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div class="mt-20 grid md:grid-cols-3 gap-8">
+        <div class="bg-white p-6 rounded-lg shadow-sm border">
+          <div class="text-3xl mb-4">🤖</div>
+          <h3 class="text-lg font-semibold mb-2">Generowanie AI</h3>
+          <p class="text-gray-600">
+            Wklej tekst, a AI automatycznie stworzy dla Ciebie wysokiej jakości fiszki edukacyjne.
+          </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm border">
+          <div class="text-3xl mb-4">📚</div>
+          <h3 class="text-lg font-semibold mb-2">Pełna kontrola</h3>
+          <p class="text-gray-600">
+            Edytuj, dodawaj i usuwaj fiszki. Twórz własne materiały lub modyfikuj wygenerowane.
+          </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm border">
+          <div class="text-3xl mb-4">🧠</div>
+          <h3 class="text-lg font-semibold mb-2">Efektywna nauka</h3>
+          <p class="text-gray-600">
+            Algorytm spaced repetition pomaga Ci uczyć się w optymalnych momentach.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
 </Layout>
