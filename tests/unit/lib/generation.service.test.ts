@@ -165,9 +165,7 @@ describe("GenerationService", () => {
         }),
       });
 
-      await expect(service.generateFlashcards(validSourceText, testUserId)).rejects.toThrow(
-        "Brak odpowiedzi z API AI"
-      );
+      await expect(service.generateFlashcards(validSourceText, testUserId)).rejects.toThrow("Brak odpowiedzi z API AI");
     });
 
     test("should throw error when no JSON found in response", async () => {
@@ -196,9 +194,7 @@ describe("GenerationService", () => {
           choices: [
             {
               message: {
-                content: JSON.stringify([
-                  { front: "  Test Question  ", back: "  Test Answer  " },
-                ]),
+                content: JSON.stringify([{ front: "  Test Question  ", back: "  Test Answer  " }]),
               },
             },
           ],
