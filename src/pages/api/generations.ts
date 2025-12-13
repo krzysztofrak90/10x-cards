@@ -87,9 +87,11 @@ export const POST: APIRoute = async (context) => {
     const validatedData = validationResult.data;
 
     // Krok 4: Wywołanie serwisu generowania
+    console.log("[generations] Starting generation for user:", user.id);
     const generationService = new GenerationService(context.locals.supabase);
 
     const result = await generationService.generateFlashcards(validatedData.source_text, user.id);
+    console.log("[generations] Generation successful:", result.generation_id);
 
     // Krok 5: Zwrócenie odpowiedzi sukcesu
     return new Response(JSON.stringify(result), {
@@ -97,6 +99,10 @@ export const POST: APIRoute = async (context) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
+    console.error("[generations] ERROR:", error);
+    console.error("[generations] Error details:", error instanceof Error ? error.message : "Nieznany błąd");
+    console.error("[generations] Error stack:", error instanceof Error ? error.stack : "No stack");
+
     return new Response(
       JSON.stringify({
         error: "Wewnętrzny błąd serwera podczas generowania fiszek",

@@ -1,0 +1,42 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - heading "FlashLearn AI" [level=1] [ref=e5]
+        - paragraph [ref=e6]: Inteligentne fiszki edukacyjne
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - generic [ref=e10]: Zaloguj się
+          - generic [ref=e11]: Wprowadź swoje dane aby się zalogować
+        - generic [ref=e13]:
+          - generic [ref=e14]: Email i hasło są wymagane
+          - generic [ref=e15]:
+            - generic [ref=e16]: Email
+            - textbox "Email" [ref=e17]:
+              - /placeholder: twoj@email.com
+          - generic [ref=e18]:
+            - generic [ref=e19]: Hasło
+            - textbox "Hasło" [ref=e20]:
+              - /placeholder: Minimum 8 znaków
+          - button "Zaloguj się" [ref=e21]
+          - generic [ref=e22]:
+            - text: Nie masz konta?
+            - link "Zarejestruj się" [ref=e23] [cursor=pointer]:
+              - /url: /register
+  - generic [ref=e26]:
+    - button "Menu" [ref=e27]:
+      - img [ref=e29]
+      - generic: Menu
+    - button "Inspect" [ref=e33]:
+      - img [ref=e35]
+      - generic: Inspect
+    - button "Audit" [ref=e37]:
+      - img [ref=e39]
+      - generic: Audit
+    - button "Settings" [ref=e42]:
+      - img [ref=e44]
+      - generic: Settings
+```

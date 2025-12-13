@@ -9,8 +9,9 @@ type TypedSupabaseClient = SupabaseClient<Database>;
 
 /**
  * Stała określająca model AI używany do generowania
+ * Darmowy model Mistral 7B Instruct
  */
-const AI_MODEL = "meta-llama/llama-3.2-3b-instruct:free";
+const AI_MODEL = "mistralai/mistral-7b-instruct:free";
 
 /**
  * Klucz API dla OpenRouter
@@ -82,6 +83,9 @@ export class GenerationService {
    * @throws Error jeśli wywołanie API się nie powiedzie
    */
   private async callAiService(sourceText: string): Promise<FlashcardProposalDTO[]> {
+    console.log("[GenerationService] OPENROUTER_API_KEY present:", !!OPENROUTER_API_KEY);
+    console.log("[GenerationService] Using model:", AI_MODEL);
+
     if (!OPENROUTER_API_KEY) {
       throw new Error("OPENROUTER_API_KEY nie jest skonfigurowany w zmiennych środowiskowych");
     }
@@ -129,6 +133,7 @@ ${sourceText}
 
 JSON response:`;
 
+    console.log("[GenerationService] Calling OpenRouter API...");
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -150,17 +155,32 @@ JSON response:`;
       }),
     });
 
+    console.log("[GenerationService] OpenRouter response status:", response.status);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error("[GenerationService] OpenRouter error:", errorData);
+
+      // Specjalna obsługa rate limit 429
+      if (response.status === 429) {
+        throw new Error(
+          "Model AI jest tymczasowo przeciążony. Spróbuj ponownie za 5-10 minut lub dodaj własny klucz API na https://openrouter.ai/settings/integrations"
+        );
+      }
+
       throw new Error(
         `OpenRouter API error: ${response.status} ${response.statusText}. ${errorData.error?.message || ""}`
       );
     }
 
     const data = await response.json();
+    console.log("[GenerationService] OpenRouter response received, choices:", data.choices?.length);
+    console.log("[GenerationService] Response data:", JSON.stringify(data, null, 2));
     const aiResponse = data.choices?.[0]?.message?.content;
+    console.log("[GenerationService] AI response content:", aiResponse ? aiResponse.substring(0, 300) : "EMPTY");
 
     if (!aiResponse) {
+      console.error("[GenerationService] Full response structure:", data);
       throw new Error("Brak odpowiedzi z API AI");
     }
 
@@ -168,12 +188,18 @@ JSON response:`;
     // Model może zwrócić albo jedną tablicę [ {...}, {...} ]
     // albo wiele osobnych tablic [ {...} ] [ {...} ]
 
+    console.log("[GenerationService] Parsing AI response...");
+    console.log("[GenerationService] AI response preview:", aiResponse.substring(0, 200));
+
     // Znajdź wszystkie tablice JSON w odpowiedzi
     const jsonArrayMatches = aiResponse.match(/\[[^[\]]*\{[^}]*\}[^[\]]*\]/g);
 
     if (!jsonArrayMatches || jsonArrayMatches.length === 0) {
+      console.error("[GenerationService] No JSON arrays found in AI response");
       throw new Error("Nie znaleziono JSON w odpowiedzi AI");
     }
+
+    console.log("[GenerationService] Found JSON arrays:", jsonArrayMatches.length);
 
     // Sparsuj wszystkie znalezione tablice i połącz je w jedną
     let flashcardsData: { front: string; back: string }[] = [];
@@ -185,7 +211,8 @@ JSON response:`;
         if (Array.isArray(parsed)) {
           flashcardsData = flashcardsData.concat(parsed);
         }
-      } catch {
+      } catch (parseError) {
+        console.error("[GenerationService] Failed to parse JSON fragment:", parseError);
         // Kontynuuj z innymi fragmentami jeśli parsowanie nie powiodło się
       }
     }
@@ -196,6 +223,8 @@ JSON response:`;
       back: card.back.trim(),
       source: "ai-full",
     }));
+
+    console.log("[GenerationService] Generated flashcards:", proposals.length);
 
     // Walidacja - sprawdź czy mamy przynajmniej jedną fiszkę
     if (proposals.length === 0) {
