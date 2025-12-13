@@ -297,8 +297,132 @@ Projekt zawiera szczegółową dokumentację techniczną:
 - **Environment Variables**: Bezpieczne przechowywanie w GitHub Secrets
 - **Monitoring**: TBD (Sentry, LogRocket)
 
+## 9. UI/UX Design
+
+### 9.1. Filozofia designu
+FlashLearn AI wykorzystuje minimalistyczną, accessibility-first filozofię designu skupioną na efektywnej nauce:
+
+- **Mobile-first responsive design** - Aplikacja jest w pełni responsywna, z priorytetem dla urządzeń mobilnych
+- **Minimalistyczny interfejs** - Skupienie na funkcjonalności, minimalna dystrakcja podczas nauki
+- **Progressive disclosure** - Stopniowe pokazywanie informacji, unikanie cognitive overload
+- **WCAG 2.1 Level AA compliance** - Pełne wsparcie dla keyboard navigation i screen readers
+
+### 9.2. Design System
+- **Framework UI**: Radix UI - accessible component primitives
+- **Styling**: Tailwind CSS 4.x z semantycznym systemem kolorów
+- **Typography**: System font stack dla optymalnej czytelności na wszystkich platformach
+- **Spacing**: 4px base unit (Tailwind spacing scale) dla konsystentnych odstępów
+- **Iconography**: Lucide React - spójny, minimalistyczny zestaw ikon
+
+### 9.3. Kluczowe widoki
+
+**Public Zone:**
+- **Landing Page** (`/`) - Value proposition, features showcase, CTA do rejestracji
+- **Register** (`/register`) - Formularz rejestracji z real-time validation
+- **Login** (`/login`) - Formularz logowania z secure password handling
+
+**Protected Zone:**
+- **Dashboard** (`/dashboard`) - Hub aplikacji z quick stats i actions
+- **Generator** (`/generator`) - AI-powered flashcard generation z inline editing
+- **Moja Kolekcja** (`/collection`) - Grid/list view z filtering, sorting, CRUD operations
+- **Nauka** (`/learn`) - Full-screen spaced repetition session (MVP: uproszczony)
+- **Profil** (`/profile`) - Account management i danger zone (delete account)
+
+### 9.4. Responsive Breakpoints
+- **Mobile**: < 640px - Single column layout, hamburger menu
+- **Tablet**: 640px - 1024px - 2 column grids, optimized touch targets
+- **Desktop**: > 1024px - 3-4 column grids, horizontal navigation
+
+### 9.5. Nawigacja
+
+**Public Navigation:**
+- Logo + Login/Register buttons
+- Mobile: Hamburger menu
+
+**Protected Navigation:**
+- Desktop: Horizontal nav (Dashboard, Generator, Kolekcja, Nauka) + User dropdown
+- Mobile: Sidebar navigation z focus trap
+- Active state highlighting dla current page
+
+### 9.6. Komponenty UI
+
+**Layout Components:**
+- `<PublicLayout>` - Header, main, footer dla public pages
+- `<ProtectedLayout>` - Header z nav, main content area
+- `<MinimalLayout>` - Fullscreen dla learn session
+
+**UI Primitives (Radix UI):**
+- Forms: `<Input>`, `<Textarea>`, `<Button>`, `<Label>`, `<FormError>`
+- Feedback: `<Toast>`, `<Spinner>`, `<ProgressBar>`, `<Skeleton>`
+- Overlays: `<Modal>`, `<ConfirmationDialog>`, `<DropdownMenu>`
+- Cards: `<Card>`, `<FlashcardCard>`, `<StatCard>`
+
+**Feature-Specific:**
+- Generator: `<CharacterCounter>`, `<FlashcardProposal>`, `<BulkActions>`
+- Collection: `<FlashcardsList>`, `<FilterBar>`, `<SortDropdown>`, `<Pagination>`
+- Learn: `<FlashcardDisplay>`, `<DifficultyRating>`, `<SessionProgress>`
+
+### 9.7. States i User Feedback
+
+**Loading States:**
+- Skeleton loaders dla initial loads (nie spinners)
+- Progress indicators dla long operations (AI generation)
+- Disabled buttons z spinners podczas API calls
+
+**Empty States:**
+- Ilustracje + helpful text + CTA buttons
+- Przykłady: "Nie masz jeszcze fiszek. Wygeneruj pierwsze!"
+
+**Error States:**
+- Toast notifications dla system errors (top-right, auto-dismiss)
+- Inline errors dla form validation (red border, icon, message)
+- Retry buttons gdzie applicable
+- User-friendly messages (bez stack traces)
+
+**Success States:**
+- Toast notifications (green checkmark, auto-dismiss 4s)
+- Inline success feedback (checkmark icon w button)
+- Smooth transitions między states
+
+### 9.8. Accessibility Features
+
+**Keyboard Navigation:**
+- All interactive elements focusable (Tab)
+- Visible focus indicators (2px outline)
+- Logical tab order
+- Skip to main content link
+- Keyboard shortcuts (optional: g+g generator, g+c collection)
+
+**Screen Reader Support:**
+- Semantic HTML (nav, main, article, section)
+- ARIA labels dla icon-only buttons
+- aria-describedby dla form fields i errors
+- aria-live dla dynamic content (character counter, toast)
+- alt text dla wszystkich obrazów
+
+**Color Contrast:**
+- Text: Minimum 4.5:1 contrast ratio
+- Large text (18pt+): Minimum 3:1
+- Interactive elements: 3:1
+
+### 9.9. Performance Targets
+- **First Contentful Paint (FCP)**: < 2s
+- **Largest Contentful Paint (LCP)**: < 2.5s
+- **Time to Interactive (TTI)**: < 3s
+- **Cumulative Layout Shift (CLS)**: < 0.1
+
+### 9.10. User Flow - Główna podróż
+
+```
+Landing → Register → Dashboard (empty) → Generator →
+Review AI proposals → Accept/Edit → Collection →
+Learn session → Dashboard (updated stats)
+```
+
+**Detailed UI Architecture:** `.ai/ui-plan.md` zawiera kompletną specyfikację wszystkich widoków, komponentów, user flows, edge cases i accessibility requirements.
+
 ---
 
-**Ostatnia aktualizacja**: 2025-12-12
-**Wersja**: 1.1
+**Ostatnia aktualizacja**: 2025-12-13
+**Wersja**: 1.2
 **Status**: Active Development
