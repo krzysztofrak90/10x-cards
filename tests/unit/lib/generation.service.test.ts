@@ -16,7 +16,7 @@ const createMockSupabaseClient = () => {
             data: {
               id: "test-generation-id",
               user_id: "test-user-id",
-              model: "meta-llama/llama-3.2-3b-instruct:free",
+              model: "mistralai/mistral-7b-instruct:free",
               generated_count: 5,
               source_text_hash: "test-hash",
               source_text_length: 1500,
@@ -153,7 +153,7 @@ describe("GenerationService", () => {
       });
 
       await expect(service.generateFlashcards(validSourceText, testUserId)).rejects.toThrow(
-        "OpenRouter API error: 429 Too Many Requests"
+        "Model AI jest tymczasowo przeciążony"
       );
     });
 
@@ -257,7 +257,7 @@ describe("GenerationService", () => {
             "Content-Type": "application/json",
             Authorization: expect.stringContaining("Bearer"),
           }),
-          body: expect.stringContaining("meta-llama/llama-3.2-3b-instruct:free"),
+          body: expect.stringContaining("mistralai/mistral-7b-instruct:free"),
         })
       );
     });
